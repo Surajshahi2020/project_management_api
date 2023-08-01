@@ -56,3 +56,11 @@ def validate_url(image):
     if re.search(p, image):
         return True
     return False
+
+
+def validate_uuid(id):
+    uuid_pattern = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    p = re.compile(uuid_pattern)
+    if re.match(p, id):
+        return True
+    return False

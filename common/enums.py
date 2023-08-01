@@ -11,3 +11,9 @@ ROLE_CHOICES = (
     ("SU", "SUPERVISOR"),
     ("HR", "HUMAN_RESOURCE"),
 )
+
+STATUS_CHOICES = (
+    ("D", "Draft"),
+    ("O", "Ongoing"),
+    ("C", "Completed"),
+)

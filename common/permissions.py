@@ -193,3 +193,24 @@ def method_permission_classes(classes):
         return decorated_func
 
     return decorator
+
+
+class IsHrOrSupervisor(permissions.BasePermission):
+    def has_permission(self, request, view):
+        flag = False
+        try:
+            flag = bool(request.user.role == "HR" or request.user.role == "SU")
+        except:
+            pass
+        if not flag:
+            raise exceptions.UnprocessableEntityException(
+                detail={
+                    "title": "Unauthenticated",
+                    "message": "Not authenticated for HR Supervisor request",
+                },
+                code=401,
+            )
+        return flag
+
+    def has_object_permission(self, request, view, obj):
+        return True

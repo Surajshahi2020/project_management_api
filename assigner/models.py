@@ -7,6 +7,7 @@ from django.db.models.signals import pre_save, post_save
 from common.enums import (
     GENDER_CHOICES,
     ROLE_CHOICES,
+    STATUS_CHOICES,
 )
 from common.utils import (
     unique_slug_generator,
@@ -44,7 +45,7 @@ class User(AbstractBaseUser):
     profile_pic = models.URLField(max_length=500, null=True, blank=True)
     role = models.CharField(max_length=2, choices=ROLE_CHOICES, default="U")
     joined_date = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     is_blocked = models.BooleanField(default=False)
     objects = UserManager()
     USERNAME_FIELD = "email"
@@ -83,20 +84,36 @@ def user_pre_save_receiver(sender, instance=User, *args, **kwargs):
 
 
 class Project(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid4, editable=False, db_index=True
+    )
     name = models.CharField(max_length=100)
     description = models.TextField()
-    creator = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="created_projects"
-    )
     contributors = models.ManyToManyField(User, related_name="contributed_projects")
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default="D")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    creator = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="project_creator",
+        null=True,
+    )
+    modifier = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="project_modifier",
+        null=True,
+    )
 
     def __str__(self):
         return self.name
 
 
 class Task(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid4, editable=False, db_index=True
+    )
     title = models.CharField(max_length=100)
     description = models.TextField()
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="tasks")
@@ -107,8 +124,51 @@ class Task(models.Model):
         on_delete=models.SET_NULL,
         related_name="assigned_tasks",
     )
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default="D")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    creator = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="task_creator",
+        null=True,
+    )
+    modifier = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="task_modifier",
+        null=True,
+    )
 
     def __str__(self):
         return self.title
+
+
+class SubmittedTask(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid4, editable=False, db_index=True
+    )
+    task = models.ForeignKey(
+        Task, on_delete=models.CASCADE, related_name="submitted_tasks"
+    )
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="submitted_tasks"
+    )
+    submission_date = models.DateTimeField(auto_now_add=True)
+    is_approved = models.BooleanField(default=False)
+    remarks = models.TextField(blank=True, null=True)
+    creator = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="submit_creator",
+        null=True,
+    )
+    modifier = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="submit_modifier",
+        null=True,
+    )
+
+    def __str__(self):
+        return f"SubmittedTask: {self.task.title} (Project: {self.project.name})"
