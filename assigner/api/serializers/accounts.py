@@ -415,6 +415,12 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 
         return super().is_valid(raise_exception=raise_exception)
 
+    def create(self, validated_data):
+        submitter = super().create(validated_data)
+        submitter.creator = self.context["request"].user
+        submitter.save()
+        return submitter
+
 
 class TaskEditSerializer(serializers.ModelSerializer):
     class Meta:
@@ -596,7 +602,7 @@ class SubmitTaskEditSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         validated_data["modifier"] = self.context["request"].user
-        submitted_task = super().update(instance, validated_data)
-        submitted_task.modifier = self.context["request"].user
-        submitted_task.save()
-        return submitted_task
+        instance = super().update(instance, validated_data)
+        instance.task.status = "O"
+        instance.task.save()
+        return instance

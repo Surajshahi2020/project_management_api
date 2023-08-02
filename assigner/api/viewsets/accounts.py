@@ -374,6 +374,9 @@ class TaskListViewSet(generics.ListAPIView):
     ]
     pagination_class = CustomPagination
 
+    def get_queryset(self):
+        return Task.objects.filter(assignee=self.request.user)
+
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         return Response(
