@@ -287,7 +287,6 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         return super().is_valid(raise_exception=raise_exception)
 
     def create(self, validated_data):
-        print(1111111111111111)
         contributors_data = validated_data.pop("contributors", [])
         project = super().create(validated_data)
         for contributor_id in contributors_data:
