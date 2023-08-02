@@ -12,6 +12,7 @@ from common.enums import (
 from common.utils import (
     unique_slug_generator,
 )
+from common.models import CommonInfo
 
 
 # Create your models here.
@@ -83,37 +84,17 @@ def user_pre_save_receiver(sender, instance=User, *args, **kwargs):
         instance.slug = unique_slug_generator(instance)
 
 
-class Project(models.Model):
-    id = models.UUIDField(
-        primary_key=True, default=uuid4, editable=False, db_index=True
-    )
+class Project(CommonInfo):
     name = models.CharField(max_length=100)
     description = models.TextField()
     contributors = models.ManyToManyField(User, related_name="contributed_projects")
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default="D")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    creator = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="project_creator",
-        null=True,
-    )
-    modifier = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="project_modifier",
-        null=True,
-    )
 
     def __str__(self):
         return self.name
 
 
-class Task(models.Model):
-    id = models.UUIDField(
-        primary_key=True, default=uuid4, editable=False, db_index=True
-    )
+class Task(CommonInfo):
     title = models.CharField(max_length=100)
     description = models.TextField()
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="tasks")
@@ -125,29 +106,12 @@ class Task(models.Model):
         related_name="assigned_tasks",
     )
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default="D")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    creator = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="task_creator",
-        null=True,
-    )
-    modifier = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="task_modifier",
-        null=True,
-    )
 
     def __str__(self):
         return self.title
 
 
-class SubmittedTask(models.Model):
-    id = models.UUIDField(
-        primary_key=True, default=uuid4, editable=False, db_index=True
-    )
+class SubmittedTask(CommonInfo):
     task = models.ForeignKey(
         Task, on_delete=models.CASCADE, related_name="submitted_tasks"
     )
@@ -157,18 +121,6 @@ class SubmittedTask(models.Model):
     submission_date = models.DateTimeField(auto_now_add=True)
     is_approved = models.BooleanField(default=False)
     remarks = models.TextField(blank=True, null=True)
-    creator = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="submit_creator",
-        null=True,
-    )
-    modifier = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="submit_modifier",
-        null=True,
-    )
 
     def __str__(self):
         return f"SubmittedTask: {self.task.title} (Project: {self.project.name})"
