@@ -252,8 +252,8 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "description",
-            "contributors",
-            "status",
+            # "contributors",
+            # "status",
         ]
 
     def is_valid(self, *, raise_exception=False):
@@ -274,32 +274,32 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
                 }
             )
 
-        for contributor in data.get("contributors", []):
-            if not validate_uuid(contributor):
-                raise UnprocessableEntityException(
-                    {
-                        "title": "Project",
-                        "status": {
-                            "read_only": True,
-                        },
-                    }
-                )
+        # for contributor in data.get("contributors", []):
+        #     if not validate_uuid(contributor):
+        #         raise UnprocessableEntityException(
+        #             {
+        #                 "title": "Project",
+        #                 "status": {
+        #                     "read_only": True,
+        #                 },
+        #             }
+        #         )
         return super().is_valid(raise_exception=raise_exception)
 
-    def create(self, validated_data):
-        contributors_data = validated_data.pop("contributors", [])
-        project = super().create(validated_data)
-        for contributor_id in contributors_data:
-            try:
-                project.contributors.add(contributor_id)
-            except User.DoesNotExist:
-                raise UnprocessableEntityException(
-                    {
-                        "title": "Project",
-                        "message": f"User with ID '{contributor_id}' does not exist.",
-                    }
-                )
-        return project
+    # def create(self, validated_data):
+    #     contributors_data = validated_data.pop("contributors", [])
+    #     project = super().create(validated_data)
+    #     for contributor_id in contributors_data:
+    #         try:
+    #             project.contributors.add(contributor_id)
+    #         except User.DoesNotExist:
+    #             raise UnprocessableEntityException(
+    #                 {
+    #                     "title": "Project",
+    #                     "message": f"User with ID '{contributor_id}' does not exist.",
+    #                 }
+    #             )
+    #     return project
 
 
 class ProjectEditSerializer(serializers.ModelSerializer):
